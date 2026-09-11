@@ -22,7 +22,7 @@ class SubjectsRelationManager extends RelationManager
 {
     protected static string $relationship = 'subjects';
 
-    protected static ?string $title = 'Enrolled Subjects & Schedules';
+    protected static ?string $title = 'المواد المسجلة والمواعيد الأسبوعية';
 
     public function isReadOnly(): bool
     {
@@ -34,21 +34,21 @@ class SubjectsRelationManager extends RelationManager
         return $schema
             ->components([
                 Select::make('weekly_day')
-                    ->label('Weekly Day')
+                    ->label('يوم الحصة الأسبوعي')
                     ->options(collect(WeeklyDay::cases())->mapWithKeys(fn (WeeklyDay $day) => [$day->value => $day->label()]))
                     ->nullable(),
 
                 TimePicker::make('weekly_start_time')
-                    ->label('Weekly Start Time')
+                    ->label('وقت البدء الأسبوعي')
                     ->seconds(false),
 
                 TimePicker::make('weekly_end_time')
-                    ->label('Weekly End Time')
+                    ->label('وقت الانتهاء الأسبوعي')
                     ->seconds(false)
                     ->after('weekly_start_time'),
 
                 Textarea::make('teacher_notes')
-                    ->label('Teacher / Plan Notes')
+                    ->label('ملاحظات الخطة / المعلم')
                     ->columnSpanFull(),
             ]);
     }
@@ -59,61 +59,67 @@ class SubjectsRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Subject')
+                    ->label('المادة الدراسية')
                     ->weight('bold')
                     ->searchable(),
 
                 TextColumn::make('pivot.weekly_day')
-                    ->label('Schedule Day')
+                    ->label('اليوم الأسبوعي')
                     ->badge()
                     ->color('info')
-                    ->formatStateUsing(fn ($state) => $state ? ucfirst((string) $state) : '—'),
+                    ->formatStateUsing(function ($state) {
+                        $enum = WeeklyDay::tryFrom((string) $state);
+
+                        return $enum ? $enum->label() : ($state ?: '—');
+                    }),
 
                 TextColumn::make('schedule_time')
-                    ->label('Weekly Time')
+                    ->label('الموعد الأسبوعي')
                     ->state(fn (Subject $record): string => $record->pivot?->weekly_start_time
                         ? substr((string) $record->pivot->weekly_start_time, 0, 5).' - '.substr((string) $record->pivot->weekly_end_time, 0, 5)
                         : '—'),
 
                 TextColumn::make('pivot.teacher_notes')
-                    ->label('Notes')
+                    ->label('ملاحظات')
                     ->limit(30)
                     ->placeholder('—'),
             ])
             ->headerActions([
                 AttachAction::make()
+                    ->label('ربط مادة دراسية')
+                    ->modalHeading('ربط مادة دراسية وتحديد الموعد')
                     ->preloadRecordSelect()
                     ->form(fn (AttachAction $action): array => [
-                        $action->getRecordSelect(),
+                        $action->getRecordSelect()->label('المادة الدراسية'),
                         Select::make('weekly_day')
-                            ->label('Weekly Day')
+                            ->label('يوم الحصة الأسبوعي')
                             ->options(collect(WeeklyDay::cases())->mapWithKeys(fn (WeeklyDay $day) => [$day->value => $day->label()]))
                             ->nullable(),
                         TimePicker::make('weekly_start_time')
-                            ->label('Weekly Start Time')
+                            ->label('وقت البدء الأسبوعي')
                             ->seconds(false),
                         TimePicker::make('weekly_end_time')
-                            ->label('Weekly End Time')
+                            ->label('وقت الانتهاء الأسبوعي')
                             ->seconds(false)
                             ->after('weekly_start_time'),
                         Textarea::make('teacher_notes')
-                            ->label('Teacher / Plan Notes'),
+                            ->label('ملاحظات الخطة / المعلم'),
                     ]),
             ])
             ->recordActions([
-                Action::make('viewClasses')
-                    ->label('Subject Classes')
-                    ->icon(Heroicon::OutlinedCalendar)
-                    ->color('primary')
-                    ->url(fn (Subject $record): string => ClassSessionResource::getUrl('index', [
-                        'tableFilters' => [
-                            'student_id' => ['value' => $this->getOwnerRecord()->getKey()],
-                            'subject_id' => ['value' => $record->id],
-                        ],
-                    ])),
+                // Action::make('viewClasses')
+                //     ->label('حصص المادة')
+                //     ->icon(Heroicon::OutlinedCalendar)
+                //     ->color('primary')
+                //     ->url(fn (Subject $record): string => ClassSessionResource::getUrl('index', [
+                //         'tableFilters' => [
+                //             'student_id' => ['value' => $this->getOwnerRecord()->getKey()],
+                //             'subject_id' => ['value' => $record->id],
+                //         ],
+                //     ])),
 
                 Action::make('scheduleClass')
-                    ->label('New Class')
+                    ->label('جدولة حصة')
                     ->icon(Heroicon::OutlinedPlusCircle)
                     ->color('success')
                     ->url(fn (Subject $record): string => ClassSessionResource::getUrl('create', [
@@ -121,8 +127,8 @@ class SubjectsRelationManager extends RelationManager
                         'subject_id' => $record->id,
                     ])),
 
-                EditAction::make(),
-                DetachAction::make(),
+                EditAction::make()->label('تعديل الموعد'),
+                DetachAction::make()->label('إلغاء الربط'),
             ]);
     }
 }

@@ -34,9 +34,15 @@ class SubjectResource extends Resource
 {
     protected static ?string $model = Subject::class;
 
+    protected static ?string $modelLabel = 'مادة دراسية';
+
+    protected static ?string $pluralModelLabel = 'المواد الدراسية';
+
+    protected static ?string $navigationLabel = 'المواد الدراسية';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Academic Management';
+    protected static UnitEnum|string|null $navigationGroup = 'الإدارة الأكاديمية';
 
     protected static ?int $navigationSort = 2;
 
@@ -46,19 +52,21 @@ class SubjectResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Subject Details')
+                Section::make('بيانات المادة الدراسية')
                     ->schema([
                         TextInput::make('name')
+                            ->label('اسم المادة')
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('e.g. Mathematics, Chemistry, English'),
+                            ->placeholder('مثال: الرياضيات، الفيزياء، اللغة الإنجليزية'),
 
                         Textarea::make('description')
+                            ->label('الوصف أو المنهج الدراسي')
                             ->rows(3)
-                            ->placeholder('Optional curriculum or syllabus details...'),
+                            ->placeholder('تفاصيل المنهج أو المقرر الدراسي...'),
 
                         Toggle::make('active')
-                            ->label('Active Subject')
+                            ->label('مادة نشطة')
                             ->default(true),
                     ]),
             ]);
@@ -68,19 +76,22 @@ class SubjectResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Subject Details')
+                Section::make('تفاصيل المادة الدراسية')
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('name')
+                                ->label('اسم المادة')
                                 ->weight('bold')
                                 ->size('lg'),
 
                             IconEntry::make('active')
+                                ->label('نشطة')
                                 ->boolean(),
                         ]),
 
                         TextEntry::make('description')
-                            ->placeholder('No description provided')
+                            ->label('الوصف')
+                            ->placeholder('لا يوجد وصف مسجل')
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -91,37 +102,41 @@ class SubjectResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('اسم المادة')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 TextColumn::make('students_count')
                     ->counts('students')
-                    ->label('Enrolled Students')
+                    ->label('عدد الطلاب المسجلين')
                     ->badge()
                     ->color('primary')
                     ->sortable(),
 
                 TextColumn::make('description')
+                    ->label('الوصف')
                     ->limit(50)
                     ->placeholder('—'),
 
                 ToggleColumn::make('active')
-                    ->label('Active'),
+                    ->label('نشطة'),
             ])
             ->filters([
                 TernaryFilter::make('active')
-                    ->label('Active Status')
-                    ->placeholder('All Subjects'),
+                    ->label('حالة النشاط')
+                    ->placeholder('جميع المواد')
+                    ->trueLabel('النشطة فقط')
+                    ->falseLabel('غير النشطة فقط'),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->label('عرض'),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                 ]),
             ]);
     }

@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="ar" dir="rtl" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Unavailable - Student Tracking</title>
+    <title>التقرير غير متاح - نظام متابعة الطلاب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
     </style>
 </head>
@@ -24,15 +24,15 @@
         </div>
 
         <div class="space-y-2">
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Report Unavailable</h1>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">التقرير غير متاح حالياً</h1>
             <p class="text-sm text-slate-600 leading-relaxed">
-                This progress report link is no longer active, has expired, or has been updated by the teacher.
+                رابط التقرير هذا غير نشط، أو انتهت صلاحيته، أو تم تحديثه بواسطة المعلم.
             </p>
         </div>
 
         <div class="pt-4 border-t border-slate-100">
             <p class="text-xs text-slate-500">
-                If you believe this is a mistake, please contact the student's teacher or school administration to receive an updated report link.
+                إذا كنت تعتقد أن هناك خطأ، يرجى التواصل مع معلم الطالب أو إدارة المدرسة للحصول على رابط التقرير الأحدث.
             </p>
         </div>
 

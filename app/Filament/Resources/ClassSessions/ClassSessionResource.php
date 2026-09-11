@@ -40,13 +40,15 @@ class ClassSessionResource extends Resource
 {
     protected static ?string $model = ClassSession::class;
 
-    protected static ?string $modelLabel = 'Class Session';
+    protected static ?string $modelLabel = 'حصة دراسية';
 
-    protected static ?string $pluralModelLabel = 'Classes & Sessions';
+    protected static ?string $pluralModelLabel = 'الحصص والجلسات';
+
+    protected static ?string $navigationLabel = 'الحصص والجلسات';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Academic Management';
+    protected static UnitEnum|string|null $navigationGroup = 'الإدارة الأكاديمية';
 
     protected static ?int $navigationSort = 3;
 
@@ -54,29 +56,30 @@ class ClassSessionResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Class Session Information')
+                Section::make('بيانات الحصة الدراسية')
                     ->schema([
                         Grid::make(2)->schema([
                             Select::make('student_id')
-                                ->label('Student')
+                                ->label('الطالب')
                                 ->relationship('student', 'name')
                                 ->searchable()
                                 ->preload()
                                 ->required(),
 
                             Select::make('subject_id')
-                                ->label('Subject')
+                                ->label('المادة الدراسية')
                                 ->relationship('subject', 'name')
                                 ->searchable()
                                 ->preload()
                                 ->required(),
 
                             DatePicker::make('date')
-                                ->label('Session Date')
+                                ->label('تاريخ الحصة')
                                 ->default(now())
                                 ->required(),
 
                             Select::make('status')
+                                ->label('حالة الحصة')
                                 ->options(collect(ClassSessionStatus::cases())->mapWithKeys(fn (ClassSessionStatus $status) => [$status->value => $status->label()]))
                                 ->default(ClassSessionStatus::Scheduled->value)
                                 ->required(),
@@ -84,21 +87,33 @@ class ClassSessionResource extends Resource
 
                         Grid::make(2)->schema([
                             TimePicker::make('start_time')
-                                ->label('Start Time')
+                                ->label('وقت البدء')
                                 ->seconds(false)
                                 ->default('10:00')
                                 ->required(),
 
                             TimePicker::make('end_time')
-                                ->label('End Time')
+                                ->label('وقت الانتهاء')
                                 ->seconds(false)
                                 ->default('11:30')
                                 ->required()
                                 ->after('start_time'),
                         ]),
 
+                        Select::make('rating')
+                            ->label('تقييم أداء الطالب في الحصة (نجوم)')
+                            ->options([
+                                5 => '⭐⭐⭐⭐⭐ (5/5) ممتاز جداً',
+                                4 => '⭐⭐⭐⭐ (4/5) جيد جداً',
+                                3 => '⭐⭐⭐ (3/5) جيد',
+                                2 => '⭐⭐ (2/5) مقبول',
+                                1 => '⭐ (1/5) يحتاج لمتابعة',
+                            ])
+                            ->nullable()
+                            ->placeholder('لم يتم التقييم بعد (اختياري)'),
+
                         Textarea::make('general_notes')
-                            ->label('Class Topics & General Notes')
+                            ->label('موضوعات الدرس والملاحظات العامة')
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
@@ -109,27 +124,28 @@ class ClassSessionResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Session Summary')
+                Section::make('ملخص الحصة')
                     ->schema([
                         Grid::make(3)->schema([
                             TextEntry::make('student.name')
-                                ->label('Student')
+                                ->label('الطالب')
                                 ->weight('bold'),
 
                             TextEntry::make('subject.name')
-                                ->label('Subject')
+                                ->label('المادة')
                                 ->badge()
                                 ->color('info'),
 
                             TextEntry::make('date')
-                                ->label('Date')
+                                ->label('التاريخ')
                                 ->date('M d, Y'),
 
                             TextEntry::make('time')
-                                ->label('Time Window')
+                                ->label('الوقت')
                                 ->state(fn (ClassSession $record): string => substr((string) $record->start_time, 0, 5).' - '.substr((string) $record->end_time, 0, 5)),
 
                             TextEntry::make('status')
+                                ->label('الحالة')
                                 ->badge()
                                 ->color(fn (ClassSessionStatus|string|null $state): string => match ($state instanceof ClassSessionStatus ? $state : ClassSessionStatus::tryFrom((string) $state)) {
                                     ClassSessionStatus::Scheduled => 'warning',
@@ -139,25 +155,30 @@ class ClassSessionResource extends Resource
                                 }),
 
                             TextEntry::make('attendance.status')
-                                ->label('Attendance')
+                                ->label('الحضور')
                                 ->badge()
-                                ->placeholder('Not recorded')
+                                ->placeholder('لم يُسجل')
                                 ->color(fn ($state): string => match ((string) ($state?->value ?? $state)) {
                                     'present' => 'success',
                                     'late' => 'warning',
                                     'absent' => 'danger',
                                     default => 'gray',
                                 }),
+
+                            TextEntry::make('rating')
+                                ->label('تقييم الأداء في الحصة')
+                                ->state(fn (ClassSession $record): string => $record->rating ? str_repeat('⭐', $record->rating)." ({$record->rating}/5)" : 'لم يتم التقييم بعد')
+                                ->columnSpanFull(),
                         ]),
 
                         TextEntry::make('attendance.notes')
-                            ->label('Attendance Remarks')
-                            ->placeholder('No notes')
+                            ->label('ملاحظات الحضور')
+                            ->placeholder('لا توجد ملاحظات')
                             ->columnSpanFull(),
 
                         TextEntry::make('general_notes')
-                            ->label('Lesson Notes / Outline')
-                            ->placeholder('No notes recorded')
+                            ->label('ملاحظات محتوى الدرس')
+                            ->placeholder('لا توجد ملاحظات مسجلة')
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -169,29 +190,31 @@ class ClassSessionResource extends Resource
             ->defaultSort('date', 'desc')
             ->columns([
                 TextColumn::make('date')
+                    ->label('التاريخ')
                     ->date('M d, Y')
                     ->sortable()
                     ->badge()
                     ->color(fn (ClassSession $record): string => $record->date?->isToday() ? 'primary' : 'gray'),
 
                 TextColumn::make('student.name')
-                    ->label('Student')
+                    ->label('الطالب')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 TextColumn::make('subject.name')
-                    ->label('Subject')
+                    ->label('المادة')
                     ->badge()
                     ->color('info')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('time')
-                    ->label('Time')
+                    ->label('الوقت')
                     ->state(fn (ClassSession $record): string => substr((string) $record->start_time, 0, 5).' - '.substr((string) $record->end_time, 0, 5)),
 
                 TextColumn::make('status')
+                    ->label('الحالة')
                     ->badge()
                     ->color(fn (ClassSessionStatus|string|null $state): string => match ($state instanceof ClassSessionStatus ? $state : ClassSessionStatus::tryFrom((string) $state)) {
                         ClassSessionStatus::Scheduled => 'warning',
@@ -201,9 +224,9 @@ class ClassSessionResource extends Resource
                     }),
 
                 TextColumn::make('attendance.status')
-                    ->label('Attendance')
+                    ->label('الحضور')
                     ->badge()
-                    ->placeholder('Not Recorded')
+                    ->placeholder('لم يُسجل')
                     ->color(fn ($state): string => match ((string) ($state?->value ?? $state)) {
                         'present' => 'success',
                         'late' => 'warning',
@@ -211,41 +234,50 @@ class ClassSessionResource extends Resource
                         default => 'gray',
                     }),
 
+                TextColumn::make('rating')
+                    ->label('تقييم الأداء')
+                    ->state(fn (ClassSession $record): string => $record->rating ? str_repeat('⭐', $record->rating) : '—')
+                    ->placeholder('—'),
+
                 TextColumn::make('assessments_count')
                     ->counts('assessments')
-                    ->label('Assessments')
+                    ->label('التقييمات')
                     ->badge()
                     ->color('primary'),
             ])
             ->filters([
                 SelectFilter::make('student_id')
-                    ->label('Student')
+                    ->label('تصفية حسب الطالب')
                     ->options(fn () => Student::pluck('name', 'id'))
                     ->searchable(),
 
                 SelectFilter::make('subject_id')
-                    ->label('Subject')
+                    ->label('تصفية حسب المادة')
                     ->options(fn () => Subject::pluck('name', 'id'))
                     ->searchable(),
 
                 SelectFilter::make('status')
+                    ->label('تصفية حسب الحالة')
                     ->options(collect(ClassSessionStatus::cases())->mapWithKeys(fn (ClassSessionStatus $status) => [$status->value => $status->label()])),
 
                 Filter::make('today')
-                    ->label('Today\'s Classes')
+                    ->label('حصص اليوم فقط')
                     ->query(fn (Builder $query): Builder => $query->whereDate('date', now()->toDateString())),
             ])
             ->recordActions([
                 Action::make('recordAttendance')
-                    ->label('Attendance')
+                    ->label('الحضور')
                     ->icon(Heroicon::OutlinedCheckBadge)
                     ->color('success')
+                    ->modalHeading('تسجيل الحضور')
                     ->form([
                         Select::make('status')
+                            ->label('حالة الحضور')
                             ->options(collect(AttendanceStatus::cases())->mapWithKeys(fn (AttendanceStatus $status) => [$status->value => $status->label()]))
                             ->default(fn (ClassSession $record) => $record->attendance?->status?->value ?? AttendanceStatus::Present->value)
                             ->required(),
                         Textarea::make('notes')
+                            ->label('ملاحظات الحضور')
                             ->default(fn (ClassSession $record) => $record->attendance?->notes),
                     ])
                     ->action(function (ClassSession $record, array $data): void {
@@ -258,14 +290,39 @@ class ClassSessionResource extends Resource
                         );
                     }),
 
-                Action::make('updateStatus')
-                    ->label('Status')
-                    ->icon(Heroicon::OutlinedArrowPathRoundedSquare)
+                Action::make('rateSession')
+                    ->label('تقييم الأداء')
+                    ->icon(Heroicon::OutlinedStar)
                     ->color('warning')
-                    ->modalHeading('Update Class Status')
+                    ->modalHeading('تقييم أداء ومستوى الطالب في الحصة')
+                    ->form([
+                        Select::make('rating')
+                            ->label('تقييم الحصة (من 5 نجوم)')
+                            ->options([
+                                5 => '⭐⭐⭐⭐⭐ (5/5) ممتاز جداً',
+                                4 => '⭐⭐⭐⭐ (4/5) جيد جداً',
+                                3 => '⭐⭐⭐ (3/5) جيد',
+                                2 => '⭐⭐ (2/5) مقبول',
+                                1 => '⭐ (1/5) يحتاج لمتابعة',
+                            ])
+                            ->default(fn (ClassSession $record) => $record->rating)
+                            ->nullable()
+                            ->placeholder('اختر التقييم (اختياري)'),
+                    ])
+                    ->action(function (ClassSession $record, array $data): void {
+                        $record->update([
+                            'rating' => $data['rating'] ?? null,
+                        ]);
+                    }),
+
+                Action::make('updateStatus')
+                    ->label('الحالة')
+                    ->icon(Heroicon::OutlinedArrowPathRoundedSquare)
+                    ->color('gray')
+                    ->modalHeading('تحديث حالة الحصة')
                     ->form([
                         Select::make('status')
-                            ->label('Session Status')
+                            ->label('حالة الحصة')
                             ->options(collect(ClassSessionStatus::cases())->mapWithKeys(fn (ClassSessionStatus $status) => [$status->value => $status->label()]))
                             ->default(fn (ClassSession $record) => $record->status instanceof ClassSessionStatus ? $record->status->value : $record->status)
                             ->required(),
@@ -276,13 +333,13 @@ class ClassSessionResource extends Resource
                         ]);
                     }),
 
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->label('عرض'),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                 ]),
             ]);
     }

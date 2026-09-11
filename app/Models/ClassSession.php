@@ -33,6 +33,7 @@ class ClassSession extends Model
         'start_time',
         'end_time',
         'status',
+        'rating',
         'general_notes',
     ];
 
@@ -46,6 +47,7 @@ class ClassSession extends Model
         return [
             'date' => 'date',
             'status' => ClassSessionStatus::class,
+            'rating' => 'integer',
         ];
     }
 

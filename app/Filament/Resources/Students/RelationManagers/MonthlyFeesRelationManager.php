@@ -23,7 +23,7 @@ class MonthlyFeesRelationManager extends RelationManager
 {
     protected static string $relationship = 'monthlyFees';
 
-    protected static ?string $title = 'Monthly Fees & Payments';
+    protected static ?string $title = 'المصروفات الشهرية وسجل السداد';
 
     public function isReadOnly(): bool
     {
@@ -36,26 +36,26 @@ class MonthlyFeesRelationManager extends RelationManager
             ->components([
                 Grid::make(2)->schema([
                     Select::make('month')
-                        ->label('Month')
+                        ->label('الشهر')
                         ->options([
-                            1 => 'January',
-                            2 => 'February',
-                            3 => 'March',
-                            4 => 'April',
-                            5 => 'May',
-                            6 => 'June',
-                            7 => 'July',
-                            8 => 'August',
-                            9 => 'September',
-                            10 => 'October',
-                            11 => 'November',
-                            12 => 'December',
+                            1 => 'يناير (01)',
+                            2 => 'فبراير (02)',
+                            3 => 'مارس (03)',
+                            4 => 'أبريل (04)',
+                            5 => 'مايو (05)',
+                            6 => 'يونيو (06)',
+                            7 => 'يوليو (07)',
+                            8 => 'أغسطس (08)',
+                            9 => 'سبتمبر (09)',
+                            10 => 'أكتوبر (10)',
+                            11 => 'نوفمبر (11)',
+                            12 => 'ديسمبر (12)',
                         ])
                         ->default(now()->month)
                         ->required(),
 
                     TextInput::make('year')
-                        ->label('Year')
+                        ->label('السنة')
                         ->numeric()
                         ->default(now()->year)
                         ->required(),
@@ -63,38 +63,48 @@ class MonthlyFeesRelationManager extends RelationManager
 
                 Grid::make(2)->schema([
                     TextInput::make('amount')
-                        ->label('Amount ($)')
+                        ->label('المبلغ')
                         ->numeric()
                         ->prefix('$')
                         ->required(),
 
                     Select::make('status')
+                        ->label('حالة السداد')
                         ->options(collect(MonthlyFeeStatus::cases())->mapWithKeys(fn (MonthlyFeeStatus $status) => [$status->value => $status->label()]))
                         ->default(MonthlyFeeStatus::Unpaid->value)
                         ->required(),
                 ]),
 
                 Textarea::make('notes')
+                    ->label('ملاحظات السداد / الإيصال')
                     ->columnSpanFull(),
             ]);
     }
 
     public function table(Table $table): Table
     {
+        $months = [
+            1 => 'يناير', 2 => 'فبراير', 3 => 'مارس', 4 => 'أبريل',
+            5 => 'مايو', 6 => 'يونيو', 7 => 'يوليو', 8 => 'أغسطس',
+            9 => 'سبتمبر', 10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر',
+        ];
+
         return $table
             ->recordTitleAttribute('month')
             ->defaultSort('year', 'desc')
             ->columns([
                 TextColumn::make('period')
-                    ->label('Month / Year')
-                    ->state(fn (MonthlyFee $record): string => date('F', mktime(0, 0, 0, $record->month, 1)).' '.$record->year)
+                    ->label('الشهر / السنة')
+                    ->state(fn (MonthlyFee $record): string => ($months[$record->month] ?? $record->month).' '.$record->year)
                     ->weight('bold'),
 
                 TextColumn::make('amount')
+                    ->label('المبلغ')
                     ->money('USD')
                     ->sortable(),
 
                 TextColumn::make('status')
+                    ->label('الحالة')
                     ->badge()
                     ->color(fn (MonthlyFeeStatus|string|null $state): string => match ($state instanceof MonthlyFeeStatus ? $state : MonthlyFeeStatus::tryFrom((string) $state)) {
                         MonthlyFeeStatus::Paid => 'success',
@@ -104,23 +114,26 @@ class MonthlyFeesRelationManager extends RelationManager
                     }),
 
                 TextColumn::make('paid_at')
+                    ->label('تاريخ السداد')
                     ->dateTime('M d, Y')
-                    ->placeholder('Not Paid'),
+                    ->placeholder('لم يتم السداد'),
 
                 TextColumn::make('notes')
+                    ->label('ملاحظات')
                     ->limit(25)
                     ->placeholder('—'),
             ])
             ->filters([
                 SelectFilter::make('status')
+                    ->label('تصفية حسب الحالة')
                     ->options(collect(MonthlyFeeStatus::cases())->mapWithKeys(fn (MonthlyFeeStatus $status) => [$status->value => $status->label()])),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()->label('إضافة استحقاق شهري'),
             ])
             ->recordActions([
                 Action::make('markAsPaid')
-                    ->label('Mark Paid')
+                    ->label('تم السداد')
                     ->icon(Heroicon::OutlinedCheckCircle)
                     ->color('success')
                     ->visible(fn (MonthlyFee $record) => $record->status !== MonthlyFeeStatus::Paid)
@@ -130,7 +143,7 @@ class MonthlyFeesRelationManager extends RelationManager
                     ])),
 
                 Action::make('markAsUnpaid')
-                    ->label('Mark Unpaid')
+                    ->label('إلغاء السداد')
                     ->icon(Heroicon::OutlinedXCircle)
                     ->color('danger')
                     ->visible(fn (MonthlyFee $record) => $record->status === MonthlyFeeStatus::Paid)
@@ -139,8 +152,8 @@ class MonthlyFeesRelationManager extends RelationManager
                         'paid_at' => null,
                     ])),
 
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ]);
     }
 }

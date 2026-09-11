@@ -38,9 +38,15 @@ class StudentResource extends Resource
 {
     protected static ?string $model = Student::class;
 
+    protected static ?string $modelLabel = 'طالب';
+
+    protected static ?string $pluralModelLabel = 'الطلاب';
+
+    protected static ?string $navigationLabel = 'الطلاب';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Academic Management';
+    protected static UnitEnum|string|null $navigationGroup = 'الإدارة الأكاديمية';
 
     protected static ?int $navigationSort = 1;
 
@@ -50,54 +56,58 @@ class StudentResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Student Information')
-                    ->description('Personal profile and status')
+                Section::make('بيانات الطالب')
+                    ->description('الملف الشخصي والحالة الأكاديمية')
                     ->schema([
                         Grid::make(2)->schema([
                             TextInput::make('name')
+                                ->label('اسم الطالب')
                                 ->required()
                                 ->maxLength(255)
-                                ->placeholder('e.g. Omar Khalid'),
+                                ->placeholder('مثال: عمر خالد'),
 
                             TextInput::make('phone')
+                                ->label('رقم الهاتف')
                                 ->tel()
                                 ->maxLength(30)
-                                ->placeholder('e.g. +201012345678'),
+                                ->placeholder('مثال: 01012345678'),
 
                             DatePicker::make('date_of_birth')
-                                ->label('Date of Birth')
+                                ->label('تاريخ الميلاد')
                                 ->native(false),
 
                             Toggle::make('active')
-                                ->label('Active Student')
+                                ->label('طالب نشط')
                                 ->default(true)
                                 ->inline(false),
                         ]),
 
                         Textarea::make('address')
+                            ->label('العنوان')
                             ->rows(2)
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Parent / Guardian Details')
+                Section::make('بيانات ولي الأمر')
                     ->schema([
                         Grid::make(2)->schema([
                             TextInput::make('parent_name')
-                                ->label('Parent / Guardian Name')
-                                ->maxLength(255),
+                                ->label('اسم ولي الأمر')
+                                ->maxLength(255)
+                                ->placeholder('مثال: خالد محمد'),
 
                             TextInput::make('parent_phone')
-                                ->label('Parent Phone')
+                                ->label('هاتف ولي الأمر')
                                 ->tel()
                                 ->maxLength(30)
-                                ->placeholder('e.g. +201098765432'),
+                                ->placeholder('مثال: 01098765432'),
                         ]),
                     ]),
 
-                Section::make('Internal Notes')
+                Section::make('ملاحظات داخلية')
                     ->schema([
                         Textarea::make('notes')
-                            ->label('Teacher / Admin Notes')
+                            ->label('ملاحظات المعلم / الإدارة')
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
@@ -108,38 +118,44 @@ class StudentResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Student Profile')
+                Section::make('الملف التعريفي للطالب')
                     ->schema([
                         Grid::make(3)->schema([
                             TextEntry::make('name')
+                                ->label('اسم الطالب')
                                 ->weight('bold')
                                 ->size('lg'),
 
                             TextEntry::make('phone')
-                                ->placeholder('Not Provided'),
+                                ->label('رقم الهاتف')
+                                ->placeholder('غير متوفر'),
 
                             IconEntry::make('active')
+                                ->label('نشط')
                                 ->boolean(),
 
                             TextEntry::make('parent_name')
-                                ->label('Parent / Guardian')
-                                ->placeholder('Not Provided'),
+                                ->label('ولي الأمر')
+                                ->placeholder('غير متوفر'),
 
                             TextEntry::make('parent_phone')
-                                ->label('Parent Phone')
-                                ->placeholder('Not Provided'),
+                                ->label('هاتف ولي الأمر')
+                                ->placeholder('غير متوفر'),
 
                             TextEntry::make('date_of_birth')
+                                ->label('تاريخ الميلاد')
                                 ->date('M d, Y')
-                                ->placeholder('Not Provided'),
+                                ->placeholder('غير متوفر'),
                         ]),
 
                         TextEntry::make('address')
-                            ->placeholder('No address specified')
+                            ->label('العنوان')
+                            ->placeholder('لا يوجد عنوان محدد')
                             ->columnSpanFull(),
 
                         TextEntry::make('notes')
-                            ->placeholder('No notes available')
+                            ->label('ملاحظات')
+                            ->placeholder('لا توجد ملاحظات مسجلة')
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -150,52 +166,55 @@ class StudentResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('اسم الطالب')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 TextColumn::make('phone')
+                    ->label('الهاتف')
                     ->searchable()
                     ->placeholder('—'),
 
                 TextColumn::make('parent_name')
-                    ->label('Parent')
+                    ->label('ولي الأمر')
                     ->searchable()
                     ->placeholder('—'),
 
                 TextColumn::make('parent_phone')
-                    ->label('Parent Phone')
+                    ->label('هاتف ولي الأمر')
                     ->searchable()
                     ->placeholder('—'),
 
                 TextColumn::make('subjects.name')
-                    ->label('Enrolled Subjects')
+                    ->label('المواد المسجلة')
                     ->badge()
                     ->color('info')
                     ->separator(', '),
 
                 ToggleColumn::make('active')
-                    ->label('Active'),
+                    ->label('نشط'),
 
                 TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime('M d, Y')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TernaryFilter::make('active')
-                    ->label('Active Status')
-                    ->placeholder('All Students')
-                    ->trueLabel('Active Only')
-                    ->falseLabel('Inactive Only'),
+                    ->label('حالة النشاط')
+                    ->placeholder('جميع الطلاب')
+                    ->trueLabel('النشطين فقط')
+                    ->falseLabel('غير النشطين فقط'),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->label('عرض'),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('حذف المحدد'),
                 ]),
             ]);
     }

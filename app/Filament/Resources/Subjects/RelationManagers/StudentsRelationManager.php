@@ -24,7 +24,7 @@ class StudentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'students';
 
-    protected static ?string $title = 'Enrolled Students';
+    protected static ?string $title = 'الطلاب المسجلون في المادة والمواعيد';
 
     public function isReadOnly(): bool
     {
@@ -36,21 +36,21 @@ class StudentsRelationManager extends RelationManager
         return $schema
             ->components([
                 Select::make('weekly_day')
-                    ->label('Weekly Day')
+                    ->label('يوم الحصة الأسبوعي')
                     ->options(collect(WeeklyDay::cases())->mapWithKeys(fn (WeeklyDay $day) => [$day->value => $day->label()]))
                     ->nullable(),
 
                 TimePicker::make('weekly_start_time')
-                    ->label('Weekly Start Time')
+                    ->label('وقت البدء الأسبوعي')
                     ->seconds(false),
 
                 TimePicker::make('weekly_end_time')
-                    ->label('Weekly End Time')
+                    ->label('وقت الانتهاء الأسبوعي')
                     ->seconds(false)
                     ->after('weekly_start_time'),
 
                 Textarea::make('teacher_notes')
-                    ->label('Teacher / Plan Notes')
+                    ->label('ملاحظات الخطة / المعلم')
                     ->columnSpanFull(),
             ]);
     }
@@ -61,52 +61,59 @@ class StudentsRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Student Name')
+                    ->label('اسم الطالب')
                     ->weight('bold')
                     ->searchable(),
 
                 TextColumn::make('phone')
-                    ->label('Phone')
+                    ->label('الهاتف')
                     ->placeholder('—'),
 
                 TextColumn::make('pivot.weekly_day')
-                    ->label('Schedule Day')
+                    ->label('اليوم الأسبوعي')
                     ->badge()
                     ->color('info')
-                    ->formatStateUsing(fn ($state) => $state ? ucfirst((string) $state) : '—'),
+                    ->formatStateUsing(function ($state) {
+                        $enum = WeeklyDay::tryFrom((string) $state);
+
+                        return $enum ? $enum->label() : ($state ?: '—');
+                    }),
 
                 TextColumn::make('schedule_time')
-                    ->label('Time')
+                    ->label('الموعد الأسبوعي')
                     ->state(fn (Student $record): string => $record->pivot?->weekly_start_time
                         ? substr((string) $record->pivot->weekly_start_time, 0, 5).' - '.substr((string) $record->pivot->weekly_end_time, 0, 5)
                         : '—'),
 
                 IconColumn::make('active')
+                    ->label('نشط')
                     ->boolean(),
             ])
             ->headerActions([
                 AttachAction::make()
+                    ->label('تسجيل طالب بالمادة')
+                    ->modalHeading('تسجيل طالب في المادة وتحديد الموعد الأسبوعي')
                     ->preloadRecordSelect()
                     ->form(fn (AttachAction $action): array => [
-                        $action->getRecordSelect(),
+                        $action->getRecordSelect()->label('اسم الطالب'),
                         Select::make('weekly_day')
-                            ->label('Weekly Day')
+                            ->label('يوم الحصة الأسبوعي')
                             ->options(collect(WeeklyDay::cases())->mapWithKeys(fn (WeeklyDay $day) => [$day->value => $day->label()]))
                             ->nullable(),
                         TimePicker::make('weekly_start_time')
-                            ->label('Weekly Start Time')
+                            ->label('وقت البدء الأسبوعي')
                             ->seconds(false),
                         TimePicker::make('weekly_end_time')
-                            ->label('Weekly End Time')
+                            ->label('وقت الانتهاء الأسبوعي')
                             ->seconds(false)
                             ->after('weekly_start_time'),
                         Textarea::make('teacher_notes')
-                            ->label('Teacher / Plan Notes'),
+                            ->label('ملاحظات الخطة / المعلم'),
                     ]),
             ])
             ->recordActions([
                 Action::make('viewClasses')
-                    ->label('Student Classes')
+                    ->label('حصص الطالب')
                     ->icon(Heroicon::OutlinedCalendar)
                     ->color('primary')
                     ->url(fn (Student $record): string => ClassSessionResource::getUrl('index', [
@@ -117,12 +124,12 @@ class StudentsRelationManager extends RelationManager
                     ])),
 
                 Action::make('studentProfile')
-                    ->label('Profile')
+                    ->label('الملف التعريفي')
                     ->icon(Heroicon::OutlinedUser)
                     ->url(fn (Student $record): string => StudentResource::getUrl('view', ['record' => $record])),
 
-                EditAction::make(),
-                DetachAction::make(),
+                EditAction::make()->label('تعديل الموعد'),
+                DetachAction::make()->label('إلغاء التسجيل'),
             ]);
     }
 }

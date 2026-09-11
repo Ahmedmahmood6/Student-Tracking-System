@@ -41,33 +41,33 @@ class StatsOverviewWidget extends BaseWidget
             ->sum('amount');
 
         return [
-            Stat::make('Total Students', $totalStudents)
-                ->description("{$activeStudents} active students")
+            Stat::make('إجمالي الطلاب', $totalStudents)
+                ->description("{$activeStudents} طالب نشط")
                 ->descriptionIcon(Heroicon::OutlinedUserGroup)
                 ->color('primary'),
 
-            Stat::make('Total Subjects', $totalSubjects)
-                ->description("{$activeSubjects} active subjects")
+            Stat::make('المواد الدراسية', $totalSubjects)
+                ->description("{$activeSubjects} مادة نشطة")
                 ->descriptionIcon(Heroicon::OutlinedAcademicCap)
                 ->color('info'),
 
-            Stat::make('Classes Today', $classesToday)
-                ->description('Scheduled for today')
+            Stat::make('حصص اليوم', $classesToday)
+                ->description('حصة مجدولة اليوم')
                 ->descriptionIcon(Heroicon::OutlinedCalendarDays)
                 ->color('warning'),
 
-            Stat::make('Present Today', $presentToday)
-                ->description('Attended sessions')
+            Stat::make('حضور اليوم', $presentToday)
+                ->description('حصة مسجلة حضور')
                 ->descriptionIcon(Heroicon::OutlinedCheckCircle)
                 ->color('success'),
 
-            Stat::make('Absent Today', $absentToday)
-                ->description('Missed sessions')
+            Stat::make('غياب اليوم', $absentToday)
+                ->description('حصة مسجلة غياب')
                 ->descriptionIcon(Heroicon::OutlinedXCircle)
                 ->color('danger'),
 
-            Stat::make('Outstanding Fees', '$'.number_format((float) $outstandingFees, 2))
-                ->description('Unpaid & partial fees')
+            Stat::make('المصروفات المستحقة', '$'.number_format((float) $outstandingFees, 2))
+                ->description('مصروفات غير مسددة أو جزئية')
                 ->descriptionIcon(Heroicon::OutlinedBanknotes)
                 ->color($outstandingFees > 0 ? 'danger' : 'success'),
         ];

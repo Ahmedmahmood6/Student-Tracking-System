@@ -2,10 +2,10 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\RecentAttendanceWidget;
 use App\Filament\Widgets\RecentReportsWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
-use App\Filament\Widgets\UpcomingClassesWidget;
+use App\Filament\Widgets\TodayClassesWidget;
+use App\Filament\Widgets\TomorrowClassesWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('Student Tracking & Reporting')
+            ->brandName('نظام متابعة الطلاب والتقارير')
             ->login()
             ->colors([
                 'primary' => Color::Indigo,
@@ -42,10 +42,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Academic Management')
+                    ->label('الإدارة الأكاديمية')
                     ->collapsible(false),
                 NavigationGroup::make()
-                    ->label('Financial Management')
+                    ->label('الإدارة المالية')
                     ->collapsible(false),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -56,8 +56,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 StatsOverviewWidget::class,
-                UpcomingClassesWidget::class,
-                RecentAttendanceWidget::class,
+                TodayClassesWidget::class,
+                TomorrowClassesWidget::class,
                 RecentReportsWidget::class,
             ])
             ->middleware([

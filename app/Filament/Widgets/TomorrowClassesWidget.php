@@ -11,9 +11,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
-class UpcomingClassesWidget extends BaseWidget
+class TomorrowClassesWidget extends BaseWidget
 {
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 3;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -22,37 +22,30 @@ class UpcomingClassesWidget extends BaseWidget
         return $table
             ->query(
                 ClassSession::query()
-                    ->whereDate('date', '>=', now()->toDateString())
+                    ->whereDate('date', now()->addDay()->toDateString())
                     ->with(['student', 'subject', 'attendance'])
-                    ->orderBy('date')
                     ->orderBy('start_time')
-                    ->limit(6)
             )
-            ->heading('Upcoming & Today\'s Classes')
-            ->emptyStateHeading('No upcoming classes found')
+            ->heading('حصص غداً')
+            ->emptyStateHeading('لا توجد حصص مجدولة للغد')
             ->emptyStateIcon(Heroicon::OutlinedCalendarDays)
             ->columns([
-                TextColumn::make('date')
-                    ->date('M d, Y')
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (ClassSession $record): string => $record->date?->isToday() ? 'primary' : 'gray'),
+                TextColumn::make('time')
+                    ->label('الوقت')
+                    ->state(fn (ClassSession $record): string => substr((string) $record->start_time, 0, 5).' - '.substr((string) $record->end_time, 0, 5)),
 
                 TextColumn::make('student.name')
-                    ->label('Student')
+                    ->label('الطالب')
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('subject.name')
-                    ->label('Subject')
+                    ->label('المادة')
                     ->badge()
                     ->color('info'),
 
-                TextColumn::make('time')
-                    ->label('Time')
-                    ->state(fn (ClassSession $record): string => substr((string) $record->start_time, 0, 5).' - '.substr((string) $record->end_time, 0, 5)),
-
                 TextColumn::make('status')
+                    ->label('الحالة')
                     ->badge()
                     ->color(fn (ClassSessionStatus|string|null $state): string => match ($state instanceof ClassSessionStatus ? $state : ClassSessionStatus::tryFrom((string) $state)) {
                         ClassSessionStatus::Scheduled => 'warning',
@@ -62,9 +55,9 @@ class UpcomingClassesWidget extends BaseWidget
                     }),
 
                 TextColumn::make('attendance.status')
-                    ->label('Attendance')
+                    ->label('الحضور')
                     ->badge()
-                    ->placeholder('Not Recorded')
+                    ->placeholder('لم يُسجل')
                     ->color(fn ($state): string => match ((string) ($state?->value ?? $state)) {
                         'present' => 'success',
                         'late' => 'warning',
@@ -74,7 +67,7 @@ class UpcomingClassesWidget extends BaseWidget
             ])
             ->recordActions([
                 Action::make('manage')
-                    ->label('Open Class')
+                    ->label('فتح الحصة')
                     ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
                     ->url(fn (ClassSession $record): string => ClassSessionResource::getUrl('view', ['record' => $record])),
             ]);

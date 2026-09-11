@@ -21,7 +21,7 @@ class AssessmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'assessments';
 
-    protected static ?string $title = 'Assessments & Homework';
+    protected static ?string $title = 'التقييمات والواجبات المدرسية';
 
     public function isReadOnly(): bool
     {
@@ -34,27 +34,27 @@ class AssessmentsRelationManager extends RelationManager
             ->components([
                 Grid::make(2)->schema([
                     Select::make('type')
-                        ->label('Assessment Type')
+                        ->label('نوع التقييم')
                         ->options(collect(AssessmentType::cases())->mapWithKeys(fn (AssessmentType $type) => [$type->value => $type->label()]))
                         ->default(AssessmentType::Homework->value)
                         ->required(),
 
                     TextInput::make('title')
-                        ->label('Title / Topic')
+                        ->label('عنوان التقييم / موضوع الاختبار')
                         ->required()
-                        ->placeholder('e.g. Chapter 2 Quiz'),
+                        ->placeholder('مثال: اختبار الباب الثاني، حل واجب صـ 45'),
                 ]),
 
                 Grid::make(2)->schema([
                     TextInput::make('score')
-                        ->label('Score Earned')
+                        ->label('الدرجة المحرزة')
                         ->numeric()
                         ->required()
                         ->minValue(0)
                         ->lte('max_score'),
 
                     TextInput::make('max_score')
-                        ->label('Maximum Score')
+                        ->label('الدرجة العظمى')
                         ->numeric()
                         ->default(100)
                         ->required()
@@ -62,11 +62,11 @@ class AssessmentsRelationManager extends RelationManager
                 ]),
 
                 Textarea::make('description')
-                    ->label('Description / Questions')
+                    ->label('الأسئلة أو تفاصيل التكليف')
                     ->columnSpanFull(),
 
                 Textarea::make('notes')
-                    ->label('Teacher Feedback / Notes')
+                    ->label('ملاحظات المعلم وتوجيهاته')
                     ->columnSpanFull(),
             ]);
     }
@@ -77,20 +77,22 @@ class AssessmentsRelationManager extends RelationManager
             ->recordTitleAttribute('title')
             ->columns([
                 TextColumn::make('type')
+                    ->label('النوع')
                     ->badge()
                     ->color('info')
-                    ->formatStateUsing(fn ($state) => $state instanceof AssessmentType ? $state->label() : ucfirst((string) $state)),
+                    ->formatStateUsing(fn ($state) => $state instanceof AssessmentType ? $state->label() : (AssessmentType::tryFrom((string) $state)?->label() ?? $state)),
 
                 TextColumn::make('title')
+                    ->label('عنوان التقييم')
                     ->weight('bold')
                     ->searchable(),
 
                 TextColumn::make('score_display')
-                    ->label('Score / Max')
+                    ->label('الدرجة / العظمى')
                     ->state(fn (Assessment $record): string => $record->score.' / '.$record->max_score),
 
                 TextColumn::make('percentage')
-                    ->label('Percentage')
+                    ->label('النسبة المئوية')
                     ->badge()
                     ->state(fn (Assessment $record): string => $record->percentage.'%')
                     ->color(fn (Assessment $record): string => match (true) {
@@ -100,20 +102,21 @@ class AssessmentsRelationManager extends RelationManager
                     }),
 
                 TextColumn::make('notes')
-                    ->label('Feedback')
+                    ->label('ملاحظات المعلم')
                     ->limit(30)
                     ->placeholder('—'),
             ])
             ->filters([
                 SelectFilter::make('type')
+                    ->label('تصفية حسب نوع التقييم')
                     ->options(collect(AssessmentType::cases())->mapWithKeys(fn (AssessmentType $type) => [$type->value => $type->label()])),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()->label('إضافة تقييم / واجب'),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ]);
     }
 }

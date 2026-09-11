@@ -15,6 +15,8 @@ class RecentReportsWidget extends BaseWidget
 {
     protected static ?int $sort = 4;
 
+    protected int|string|array $columnSpan = 'full';
+
     public function table(Table $table): Table
     {
         return $table
@@ -24,38 +26,38 @@ class RecentReportsWidget extends BaseWidget
                     ->latest('generated_at')
                     ->limit(5)
             )
-            ->heading('Recent Weekly Reports')
-            ->emptyStateHeading('No weekly reports generated yet')
+            ->heading('أحدث التقارير الأسبوعية')
+            ->emptyStateHeading('لم يتم إنشاء تقارير أسبوعية بعد')
             ->emptyStateIcon(Heroicon::OutlinedDocumentChartBar)
             ->columns([
                 TextColumn::make('student.name')
-                    ->label('Student')
+                    ->label('الطالب')
                     ->weight('bold'),
 
                 TextColumn::make('period')
-                    ->label('Period')
+                    ->label('فترة التقرير')
                     ->state(fn (Report $record): string => $record->week_start?->format('M d').' - '.$record->week_end?->format('M d, Y')),
 
                 TextColumn::make('attendance_rate')
-                    ->label('Attendance')
+                    ->label('نسبة الحضور')
                     ->badge()
                     ->color('success')
                     ->state(fn (Report $record): string => ($record->snapshot['attendance_summary']['attendance_percentage'] ?? 'N/A').'%'),
 
                 TextColumn::make('academic_avg')
-                    ->label('Assessment Avg')
+                    ->label('متوسط التقييمات')
                     ->badge()
                     ->color('info')
                     ->state(fn (Report $record): string => ($record->snapshot['assessment_summary']['overall_average_percentage'] ?? 'N/A').'%'),
 
                 IconColumn::make('is_valid')
-                    ->label('Active Link')
+                    ->label('الرابط فعال')
                     ->boolean()
                     ->state(fn (Report $record): bool => $record->isValid()),
             ])
             ->recordActions([
                 Action::make('viewStudent')
-                    ->label('Student Profile')
+                    ->label('الملف التعريفي')
                     ->icon(Heroicon::OutlinedUser)
                     ->url(fn (Report $record): string => $record->student ? StudentResource::getUrl('view', ['record' => $record->student]) : '#'),
             ]);

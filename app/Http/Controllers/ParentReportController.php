@@ -26,6 +26,7 @@ class ParentReportController extends Controller
             'period' => $report->snapshot['period'] ?? [],
             'attendanceSummary' => $report->snapshot['attendance_summary'] ?? [],
             'assessmentSummary' => $report->snapshot['assessment_summary'] ?? [],
+            'performanceSummary' => $report->snapshot['performance_summary'] ?? [],
             'subjects' => $report->snapshot['subjects'] ?? [],
             'sessions' => $report->snapshot['sessions'] ?? [],
         ]);

@@ -109,6 +109,11 @@ class WeeklyReportService
         $assessmentStats = $this->calculateAssessmentStats($sessions);
         $subjectSummaries = $this->calculateSubjectSummaries($sessions);
 
+        $ratedSessions = $sessions->filter(fn (ClassSession $s) => $s->rating !== null);
+        $averageRating = $ratedSessions->isNotEmpty()
+            ? round((float) $ratedSessions->avg('rating'), 1)
+            : null;
+
         return [
             'student' => [
                 'id' => $student->id,
@@ -124,6 +129,10 @@ class WeeklyReportService
             ],
             'attendance_summary' => $attendanceStats,
             'assessment_summary' => $assessmentStats,
+            'performance_summary' => [
+                'average_rating' => $averageRating,
+                'rated_sessions_count' => $ratedSessions->count(),
+            ],
             'subjects' => $subjectSummaries,
             'sessions' => $sessions->map(function (ClassSession $session) {
                 return [
@@ -133,6 +142,7 @@ class WeeklyReportService
                     'start_time' => $session->start_time,
                     'end_time' => $session->end_time,
                     'status' => $session->status?->value ?? (string) $session->status,
+                    'rating' => $session->rating,
                     'general_notes' => $session->general_notes,
                     'attendance' => $session->attendance ? [
                         'status' => $session->attendance->status?->value ?? (string) $session->attendance->status,
