@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Students;
 
+use App\Enums\ExamType;
+use App\Enums\GradeLevel;
 use App\Filament\Resources\Students\Pages\CreateStudent;
 use App\Filament\Resources\Students\Pages\EditStudent;
 use App\Filament\Resources\Students\Pages\ListStudents;
@@ -18,6 +20,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -71,6 +74,16 @@ class StudentResource extends Resource
                                 ->tel()
                                 ->maxLength(30)
                                 ->placeholder('مثال: 01012345678'),
+
+                            Select::make('grade_level')
+                                ->label('الصف الدراسي')
+                                ->options(GradeLevel::class)
+                                ->searchable()
+                                ->preload(),
+
+                            Select::make('exam_type')
+                                ->label('نوع الاختبار')
+                                ->options(ExamType::class),
 
                             DatePicker::make('date_of_birth')
                                 ->label('تاريخ الميلاد')
@@ -134,6 +147,16 @@ class StudentResource extends Resource
                                 ->label('نشط')
                                 ->boolean(),
 
+                            TextEntry::make('grade_level')
+                                ->label('الصف الدراسي')
+                                ->badge()
+                                ->placeholder('غير محدد'),
+
+                            TextEntry::make('exam_type')
+                                ->label('نوع الاختبار')
+                                ->badge()
+                                ->placeholder('غير محدد'),
+
                             TextEntry::make('parent_name')
                                 ->label('ولي الأمر')
                                 ->placeholder('غير متوفر'),
@@ -191,6 +214,16 @@ class StudentResource extends Resource
                     ->badge()
                     ->color('info')
                     ->separator(', '),
+
+                TextColumn::make('grade_level')
+                    ->label('الصف الدراسي')
+                    ->badge()
+                    ->sortable(),
+
+                TextColumn::make('exam_type')
+                    ->label('نوع الاختبار')
+                    ->badge()
+                    ->sortable(),
 
                 ToggleColumn::make('active')
                     ->label('نشط'),

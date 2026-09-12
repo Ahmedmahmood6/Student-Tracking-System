@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ExamType;
+use App\Enums\GradeLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +20,8 @@ class Student extends Model
      */
     protected $fillable = [
         'name',
+        'grade_level',
+        'exam_type',
         'phone',
         'parent_name',
         'parent_phone',
@@ -35,6 +39,8 @@ class Student extends Model
     protected function casts(): array
     {
         return [
+            'grade_level' => GradeLevel::class,
+            'exam_type' => ExamType::class,
             'date_of_birth' => 'date',
             'active' => 'boolean',
         ];
