@@ -33,6 +33,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use UnitEnum;
@@ -234,6 +235,12 @@ class StudentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('grade_level')
+                    ->label('الصف الدراسي')
+                    ->options(GradeLevel::class),
+                SelectFilter::make('exam_type')
+                    ->label('نوع الاختبار')
+                    ->options(ExamType::class),
                 TernaryFilter::make('active')
                     ->label('حالة النشاط')
                     ->placeholder('جميع الطلاب')
