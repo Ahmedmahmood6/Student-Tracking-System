@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('نظام متابعة الطلاب والتقارير')
+            ->brandName('نظام متابعة الطلاب')
             ->login()
             ->colors([
                 'primary' => Color::Pink,
