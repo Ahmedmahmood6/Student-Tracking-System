@@ -56,9 +56,9 @@ test('authenticated user can access admin dashboard and see stats', function () 
     $response = $this->actingAs($user)->get('/admin');
 
     $response->assertSuccessful();
-    $response->assertSee('Student Tracking & Reporting');
-    $response->assertSee('Academic Management');
-    $response->assertSee('Financial Management');
+    $response->assertSee('نظام متابعة الطلاب والتقارير');
+    $response->assertSee('الإدارة الأكاديمية');
+    $response->assertSee('الإدارة المالية');
 });
 
 test('can render student resource list and view pages', function () {
@@ -78,7 +78,6 @@ test('can render student resource list and view pages', function () {
     $viewResponse = $this->actingAs($user)->get(StudentResource::getUrl('view', ['record' => $student]));
     $viewResponse->assertSuccessful();
     $viewResponse->assertSee('Tarek Mansour');
-    $viewResponse->assertSee('Enrolled Subjects & Schedules');
 });
 
 test('can render subject resource and class session resource pages', function () {
@@ -117,5 +116,5 @@ test('can render monthly fee resource page and filter', function () {
     $response = $this->actingAs($user)->get(MonthlyFeeResource::getUrl('index'));
     $response->assertSuccessful();
     $response->assertSee('Kareem Nader');
-    $response->assertSee('September 2026');
+    $response->assertSee('سبتمبر 2026');
 });

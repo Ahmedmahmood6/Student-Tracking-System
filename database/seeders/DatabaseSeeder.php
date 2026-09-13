@@ -6,6 +6,7 @@ use App\Enums\AssessmentType;
 use App\Enums\AttendanceStatus;
 use App\Enums\ClassSessionStatus;
 use App\Enums\MonthlyFeeStatus;
+use App\Enums\UserRole;
 use App\Enums\WeeklyDay;
 use App\Models\Assessment;
 use App\Models\Attendance;
@@ -33,16 +34,20 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@admin.com'],
             [
                 'name' => 'Admin User',
-                'password' => Hash::make('password'),
+                'phone' => '01000000001',
+                'role' => UserRole::Admin,
+                'password' => Hash::make('admin@2006'),
                 'email_verified_at' => now(),
             ]
         );
 
-        // Also ensure test@example.com exists
+        // Also ensure test@example.com exists as Teacher
         User::updateOrCreate(
             ['email' => 'test@example.com'],
             [
                 'name' => 'Teacher / Admin',
+                'phone' => '01000000002',
+                'role' => UserRole::Teacher,
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]

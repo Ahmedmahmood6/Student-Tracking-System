@@ -66,14 +66,14 @@ test('public parent report is accessible with valid token', function () {
     $response->assertSee('Nour Eldin');
     $response->assertSee('Quadratic Quiz');
     $response->assertSee('90%');
-    $response->assertSee('Print / Save PDF');
+    $response->assertSee('طباعة / حفظ PDF');
 });
 
 test('public parent report returns 404 generic error for invalid or revoked tokens', function () {
     // 1. Invalid random token
     $invalidResponse = $this->get('/parent-report/non_existent_token_123456');
     $invalidResponse->assertStatus(404);
-    $invalidResponse->assertSee('Report Unavailable');
+    $invalidResponse->assertSee('التقرير غير متاح حالياً');
 
     // 2. Revoked token
     $student = Student::factory()->create(['name' => 'Kareem Tarek']);
@@ -89,7 +89,7 @@ test('public parent report returns 404 generic error for invalid or revoked toke
 
     $revokedResponse = $this->get(route('parent.report.show', ['token' => $plainToken]));
     $revokedResponse->assertStatus(404);
-    $revokedResponse->assertSee('Report Unavailable');
+    $revokedResponse->assertSee('التقرير غير متاح حالياً');
     // Ensure no sensitive student ID is leaked in error response
     $revokedResponse->assertDontSee('Kareem Tarek');
 });
