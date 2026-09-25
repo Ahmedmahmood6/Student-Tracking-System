@@ -163,7 +163,7 @@ class ReportsRelationManager extends RelationManager
 
                         $html = '<div class="space-y-4 text-sm" dir="rtl">';
                         $html .= '<div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">';
-                        $html .= '<div><strong>نسبة الحضور:</strong> '.($att['attendance_percentage'] ?? 0).'% ('.($att['present'] ?? 0).' حاضر، '.($att['late'] ?? 0).' متأخر، '.($att['absent'] ?? 0).' غائب)</div>';
+                        $html .= '<div><strong>نسبة الحضور:</strong> '.($att['attendance_percentage'] ?? 0).'% ('.((int) ($att['present'] ?? 0)).' حاضر، '.((int) ($att['late'] ?? 0)).' متأخر، '.((int) ($att['absent'] ?? 0)).' غائب)</div>';
                         $html .= '<div><strong>متوسط التقييمات:</strong> '.($asmt['overall_average_percentage'] ?? 0).'% ('.($asmt['total_assessments'] ?? 0).' مهمة مقيمة)</div>';
                         $html .= '</div>';
 

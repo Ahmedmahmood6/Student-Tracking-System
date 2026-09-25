@@ -90,9 +90,9 @@
                             </span>
                         </div>
                         <div class="mt-2 text-xs text-slate-500">
-                            <span class="text-emerald-700 font-semibold">{{ $attendanceSummary['present'] ?? 0 }} حاضر</span> &bull; 
-                            <span class="text-amber-700 font-semibold">{{ $attendanceSummary['late'] ?? 0 }} متأخر</span> &bull; 
-                            <span class="text-rose-700 font-semibold">{{ $attendanceSummary['absent'] ?? 0 }} غائب</span>
+                            <span class="text-emerald-700 font-semibold">{{ (int) ($attendanceSummary['present'] ?? 0) }} حاضر</span> &bull; 
+                            <span class="text-amber-700 font-semibold">{{ (int) ($attendanceSummary['late'] ?? 0) }} متأخر</span> &bull; 
+                            <span class="text-rose-700 font-semibold">{{ (int) ($attendanceSummary['absent'] ?? 0) }} غائب</span>
                         </div>
                     </div>
 
@@ -130,7 +130,7 @@
                         <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">إجمالي الحصص</span>
                         <div class="mt-2">
                             <span class="text-3xl font-extrabold text-slate-800">
-                                {{ $attendanceSummary['total_sessions'] ?? 0 }}
+                                {{ (float) ($attendanceSummary['total_sessions'] ?? 0) == (int) ($attendanceSummary['total_sessions'] ?? 0) ? (int) ($attendanceSummary['total_sessions'] ?? 0) : ($attendanceSummary['total_sessions'] ?? 0) }}
                             </span>
                         </div>
                         <div class="mt-2 text-xs text-slate-500">
@@ -168,7 +168,7 @@
                             <div class="flex justify-between items-center mb-3">
                                 <h3 class="font-bold text-slate-900">{{ $subj['subject_name'] }}</h3>
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                    {{ $subj['total_sessions'] }} حصة
+                                    {{ (float) ($subj['total_sessions'] ?? 0) == (int) ($subj['total_sessions'] ?? 0) ? (int) ($subj['total_sessions'] ?? 0) : ($subj['total_sessions'] ?? 0) }} حصة
                                 </span>
                             </div>
                             <div class="space-y-2 text-xs">
@@ -210,7 +210,7 @@
                                         <div class="flex items-center gap-2">
                                             <span class="font-bold text-slate-900">{{ $session['subject_name'] ?? 'حصة دراسية' }}</span>
                                             <span class="text-xs text-slate-500">
-                                                &bull; {{ \Carbon\Carbon::parse($session['date'])->translatedFormat('l, d M Y') }} ({{ substr($session['start_time'], 0, 5) }} - {{ substr($session['end_time'], 0, 5) }})
+                                                &bull; {{ \Carbon\Carbon::parse($session['date'])->translatedFormat('l, d M Y') }}
                                             </span>
                                         </div>
                                         @if(!empty($session['general_notes']))

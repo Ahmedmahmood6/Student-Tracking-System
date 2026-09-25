@@ -141,6 +141,7 @@ class WeeklyReportService
                     'date' => $session->date?->toDateString(),
                     'start_time' => $session->start_time,
                     'end_time' => $session->end_time,
+                    'session_count' => (float) ($session->session_count ?? 1.0),
                     'status' => $session->status?->value ?? (string) $session->status,
                     'rating' => $session->rating,
                     'general_notes' => $session->general_notes,
@@ -168,44 +169,58 @@ class WeeklyReportService
      * Calculate attendance counts and percentage.
      *
      * @param  Collection<int, ClassSession>  $sessions
-     * @return array{total_sessions: int, present: int, absent: int, late: int, recorded_sessions: int, attendance_percentage: float}
+     * @return array{total_sessions: float|int, present: float|int, absent: float|int, late: float|int, recorded_sessions: float|int, attendance_percentage: float}
      */
     public function calculateAttendanceStats(Collection $sessions): array
     {
-        $totalSessions = $sessions->count();
+        $totalSessions = (float) $sessions->sum(fn (ClassSession $s) => (float) ($s->session_count ?? 1.0));
         $present = 0;
         $absent = 0;
         $late = 0;
+        $presentWeight = 0.0;
+        $absentWeight = 0.0;
+        $lateWeight = 0.0;
 
         foreach ($sessions as $session) {
             if (! $session->attendance) {
                 continue;
             }
 
+            $weight = (float) ($session->session_count ?? 1.0);
+
             $status = $session->attendance->status instanceof AttendanceStatus
                 ? $session->attendance->status
                 : AttendanceStatus::tryFrom((string) $session->attendance->status);
 
             match ($status) {
-                AttendanceStatus::Present => $present++,
-                AttendanceStatus::Absent => $absent++,
-                AttendanceStatus::Late => $late++,
+                AttendanceStatus::Present => [
+                    $present++,
+                    $presentWeight += $weight,
+                ],
+                AttendanceStatus::Absent => [
+                    $absent++,
+                    $absentWeight += $weight,
+                ],
+                AttendanceStatus::Late => [
+                    $late++,
+                    $lateWeight += $weight,
+                ],
                 default => null,
             };
         }
 
-        $recordedSessions = $present + $absent + $late;
+        $recordedWeights = $presentWeight + $absentWeight + $lateWeight;
         // Calculation: (Present + Late) / Total Recorded Sessions or default 0
-        $attendancePercentage = $recordedSessions > 0
-            ? round((($present + ($late * 0.5)) / $recordedSessions) * 100, 2)
+        $attendancePercentage = $recordedWeights > 0
+            ? round((($presentWeight + ($lateWeight * 0.5)) / $recordedWeights) * 100, 2)
             : 0.0;
 
         return [
             'total_sessions' => $totalSessions,
-            'present' => $present,
-            'absent' => $absent,
-            'late' => $late,
-            'recorded_sessions' => $recordedSessions,
+            'present' => (int) floor($presentWeight),
+            'absent' => (int) floor($absentWeight),
+            'late' => (int) floor($lateWeight),
+            'recorded_sessions' => (int) floor($recordedWeights),
             'attendance_percentage' => $attendancePercentage,
         ];
     }
@@ -300,7 +315,7 @@ class WeeklyReportService
             $summaries[] = [
                 'subject_id' => $subjectId,
                 'subject_name' => $subjectName,
-                'total_sessions' => $subjectSessions->count(),
+                'total_sessions' => (float) $subjectSessions->sum(fn (ClassSession $s) => (float) ($s->session_count ?? 1.0)),
                 'attendance_percentage' => $attendance['attendance_percentage'],
                 'assessment_average_percentage' => $assessments['overall_average_percentage'],
                 'assessments_count' => $assessments['total_assessments'],

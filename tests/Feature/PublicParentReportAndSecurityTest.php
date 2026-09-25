@@ -118,3 +118,57 @@ test('can regenerate token for a revoked or active report', function () {
         ->assertSuccessful()
         ->assertSee('Mona Samir');
 });
+
+test('parent report calculates total sessions by summing session_count and omits time range', function () {
+    $student = Student::factory()->create(['name' => 'Sara Ali']);
+    $subject = Subject::factory()->create(['name' => 'Arabic Language']);
+
+    // Session 1: 2 units (e.g. 80 minutes)
+    $session1 = ClassSession::factory()->create([
+        'student_id' => $student->id,
+        'subject_id' => $subject->id,
+        'date' => now()->startOfWeek()->toDateString(),
+        'start_time' => '17:00:00',
+        'end_time' => '18:20:00',
+        'session_count' => 2.0,
+        'status' => ClassSessionStatus::Completed,
+    ]);
+    Attendance::factory()->create([
+        'class_id' => $session1->id,
+        'status' => AttendanceStatus::Present,
+    ]);
+
+    // Session 2: 1.5 units (e.g. 60 minutes)
+    $session2 = ClassSession::factory()->create([
+        'student_id' => $student->id,
+        'subject_id' => $subject->id,
+        'date' => now()->startOfWeek()->addDay()->toDateString(),
+        'start_time' => '19:00:00',
+        'end_time' => '20:00:00',
+        'session_count' => 1.5,
+        'status' => ClassSessionStatus::Completed,
+    ]);
+    Attendance::factory()->create([
+        'class_id' => $session2->id,
+        'status' => AttendanceStatus::Present,
+    ]);
+
+    $service = app(WeeklyReportService::class);
+    $result = $service->generate(
+        $student,
+        now()->startOfWeek()->toDateString(),
+        now()->endOfWeek()->toDateString()
+    );
+
+    $snapshot = $result['report']->snapshot;
+    expect($snapshot['attendance_summary']['total_sessions'])->toBe(3.5)
+        ->and($snapshot['attendance_summary']['present'])->toBe(3)
+        ->and($snapshot['subjects'][0]['total_sessions'])->toBe(3.5);
+
+    $response = $this->get(route('parent.report.show', ['token' => $result['plain_token']]));
+    $response->assertSuccessful();
+    $response->assertSee('3.5');
+    $response->assertSee('3 حاضر');
+    $response->assertDontSee('(17:00 - 18:20)');
+    $response->assertDontSee('(19:00 - 20:00)');
+});

@@ -52,7 +52,7 @@ class ClassesRelationManager extends RelationManager
                     ->required()
                     ->default(now()),
 
-                Grid::make(2)->schema([
+                Grid::make(3)->schema([
                     TimePicker::make('start_time')
                         ->label('وقت البدء')
                         ->required()
@@ -65,6 +65,24 @@ class ClassesRelationManager extends RelationManager
                         ->seconds(false)
                         ->default('11:30')
                         ->after('start_time'),
+
+                    Select::make('session_count')
+                        ->label('عدد الحصص')
+                        ->options([
+                            '1.0' => '1 (حصة واحدة)',
+                            '1.5' => '1.5 (حصة ونصف)',
+                            '2.0' => '2 (حصتان)',
+                            '2.5' => '2.5 (حصتان ونصف)',
+                            '3.0' => '3 (3 حصص)',
+                            '3.5' => '3.5 (3 حصص ونصف)',
+                            '4.0' => '4 (4 حصص)',
+                            '4.5' => '4.5 (4 حصص ونصف)',
+                            '5.0' => '5 (5 حصص)',
+                            '5.5' => '5.5 (5 حصص ونصف)',
+                            '6.0' => '6 (6 حصص)',
+                        ])
+                        ->default('1.0')
+                        ->required(),
                 ]),
 
                 Grid::make(2)->schema([
@@ -114,6 +132,25 @@ class ClassesRelationManager extends RelationManager
                 TextColumn::make('time')
                     ->label('الوقت')
                     ->state(fn (ClassSession $record): string => substr((string) $record->start_time, 0, 5).' - '.substr((string) $record->end_time, 0, 5)),
+
+                TextColumn::make('session_count')
+                    ->label('عدد الحصص')
+                    ->badge()
+                    ->color('gray')
+                    ->formatStateUsing(fn ($state): string => match ((string) (float) $state) {
+                        '1' => '1 حصة',
+                        '1.5' => '1.5 حصة',
+                        '2' => 'حصتان',
+                        '2.5' => '2.5 حصة',
+                        '3' => '3 حصص',
+                        '3.5' => '3.5 حصة',
+                        '4' => '4 حصص',
+                        '4.5' => '4.5 حصة',
+                        '5' => '5 حصص',
+                        '5.5' => '5.5 حصة',
+                        '6' => '6 حصص',
+                        default => ((string) $state).' حصة',
+                    }),
 
                 TextColumn::make('status')
                     ->label('الحالة')

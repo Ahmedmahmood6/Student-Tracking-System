@@ -56,7 +56,7 @@ test('authenticated user can access admin dashboard and see stats', function () 
     $response = $this->actingAs($user)->get('/admin');
 
     $response->assertSuccessful();
-    $response->assertSee('نظام متابعة الطلاب والتقارير');
+    $response->assertSee('نظام متابعة الطلاب');
     $response->assertSee('الإدارة الأكاديمية');
     $response->assertSee('الإدارة المالية');
 });

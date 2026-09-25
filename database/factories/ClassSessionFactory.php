@@ -23,6 +23,7 @@ class ClassSessionFactory extends Factory
             'date' => fake()->date(),
             'start_time' => '14:00:00',
             'end_time' => '15:30:00',
+            'session_count' => 1.0,
             'status' => ClassSessionStatus::Scheduled,
             'general_notes' => fake()->sentence(),
         ];

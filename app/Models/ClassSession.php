@@ -32,6 +32,7 @@ class ClassSession extends Model
         'date',
         'start_time',
         'end_time',
+        'session_count',
         'status',
         'rating',
         'general_notes',
@@ -48,6 +49,7 @@ class ClassSession extends Model
             'date' => 'date',
             'status' => ClassSessionStatus::class,
             'rating' => 'integer',
+            'session_count' => 'float',
         ];
     }
 
